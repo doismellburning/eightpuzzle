@@ -51,17 +51,27 @@ branch_toward state direction = let mc = move_coord state direction
                                    Nothing -> Nothing
 
 type SearchState = Map.Map State [Direction]
-type StateQueue = [State]
+data StateQueue = StateQueue [State]
+
+start_state_queue :: State -> StateQueue
+start_state_queue state = StateQueue [state]
+
+state_queue_get :: StateQueue -> (StateQueue, State)
+state_queue_get (StateQueue (x:xs)) = (StateQueue xs, x)
+
+state_queue_push :: StateQueue -> State -> StateQueue
+state_queue_push (StateQueue states) state = StateQueue (states ++ [state])
 
 search_iteration :: (SearchState, StateQueue) -> (SearchState, StateQueue)
-search_iteration (search_state, x:xs) = let new_branches = branches x
-                                            path_so_far = fromJust (Map.lookup x search_state)
-                                            graft_branches_to_search_state (ss, sq) ((direction, new_state):bs) = case new_state `Map.member` ss of
-                                                                                                                    True -> graft_branches_to_search_state (ss, sq) bs
-                                                                                                                    False -> graft_branches_to_search_state ((Map.insert new_state (path_so_far ++ [direction]) ss), sq ++ [new_state]) bs
+search_iteration (search_state, state_queue) = let (new_state_queue, badger) = state_queue_get state_queue
+                                                   new_branches = branches badger
+                                                   path_so_far = fromJust (Map.lookup badger search_state)
+                                                   graft_branches_to_search_state (ss, sq) ((direction, new_state):bs) = case new_state `Map.member` ss of
+                                                                                                                             True -> graft_branches_to_search_state (ss, sq) bs
+                                                                                                                             False -> graft_branches_to_search_state ((Map.insert new_state (path_so_far ++ [direction]) ss), state_queue_push sq new_state) bs
 
-                                            graft_branches_to_search_state (ss, sq) [] = (ss, sq)
-                                        in graft_branches_to_search_state (search_state, xs) new_branches
+                                                   graft_branches_to_search_state (ss, sq) [] = (ss, sq)
+                                               in graft_branches_to_search_state (search_state, new_state_queue) new_branches
 
 
 search :: State -> (SearchState, StateQueue) -> SearchState
@@ -70,7 +80,7 @@ search solution (search_state, x) = search solution (search_iteration (search_st
 
 solve :: State -> State -> SearchState
 solve initial_state solution = let initial_search_state = Map.fromList [(initial_state, [])]
-                                in search solution (initial_search_state, [initial_state])
+                                in search solution (initial_search_state, start_state_queue initial_state)
 
 solution_path :: State -> SearchState -> [Direction]
 solution_path solution search_state = fromJust (Map.lookup solution search_state)
