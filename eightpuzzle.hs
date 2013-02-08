@@ -51,16 +51,16 @@ branch_toward state direction = let mc = move_coord state direction
                                    Nothing -> Nothing
 
 type SearchState = Map.Map State [Direction]
-data StateQueue = StateQueue [State]
+data StateQueue = SimpleQueue [State]
 
 start_state_queue :: State -> StateQueue
-start_state_queue state = StateQueue [state]
+start_state_queue state = SimpleQueue [state]
 
 state_queue_get :: StateQueue -> (StateQueue, State)
-state_queue_get (StateQueue (x:xs)) = (StateQueue xs, x)
+state_queue_get (SimpleQueue (x:xs)) = (SimpleQueue xs, x)
 
 state_queue_push :: StateQueue -> State -> StateQueue
-state_queue_push (StateQueue states) state = StateQueue (states ++ [state])
+state_queue_push (SimpleQueue states) state = SimpleQueue (states ++ [state])
 
 search_iteration :: (SearchState, StateQueue) -> (SearchState, StateQueue)
 search_iteration (search_state, state_queue) = let (new_state_queue, badger) = state_queue_get state_queue
