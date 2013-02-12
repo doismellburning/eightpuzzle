@@ -12,6 +12,7 @@ zero_position :: State -> Coord
 -- TODO Implement this better... totally some kind of filter / map / something
 zero_position state = let zp ((x, 0):xs) = x
                           zp (_:xs) = zp xs
+                          zp [] = error "Couldn't find a zero_position in the State"
                       in zp (assocs state)
 
 swap :: State -> Coord -> State
