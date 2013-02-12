@@ -15,10 +15,10 @@ zero_position state = let zp ((x, 0):xs) = x
                           zp [] = error "Couldn't find a zero_position in the State"
                       in zp (assocs state)
 
-swap :: State -> Coord -> State
-swap state coord = let z = zero_position state
-                       o = state!coord
-                   in state // [(z, o), (coord, 0)]
+move_to_zero :: State -> Coord -> State
+move_to_zero state coord = let z = zero_position state
+                               o = state!coord
+                           in state // [(z, o), (coord, 0)]
 
 data Direction = Up
                | Down
@@ -48,7 +48,7 @@ move_coord state direction = let cd = coord_direction (zero_position state) dire
 branch_toward :: State -> Direction -> Maybe State
 branch_toward state direction = let mc = move_coord state direction
                                 in case mc of
-                                   Just coord -> Just (swap state coord)
+                                   Just coord -> Just (move_to_zero state coord)
                                    Nothing -> Nothing
 
 type SearchState = Map.Map State [Direction]
